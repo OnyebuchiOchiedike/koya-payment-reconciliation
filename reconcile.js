@@ -1,3 +1,4 @@
+
 // Payment reconciliation.
 //
 // Reads payments.jsonl and works out how much money we actually collected.
@@ -9,8 +10,29 @@ let total = 0;
 let count = 0;
 
 const lines = fs.readFileSync("payments.jsonl", "utf8").split("\n").filter((l) => l.length > 0);
+const latestPayments = new Map();
+
 for (const line of lines) {
-  const event = JSON.parse(line);
+  let event;
+
+  try {
+    event = JSON.parse(line);
+  } catch {
+    continue;
+  }
+
+  if (!event.txn_id) {
+    continue;
+  }
+
+  const previous = latestPayments.get(event.txn_id);
+
+  if (!previous || Date.parse(event.ts) >= Date.parse(previous.ts)) {
+    latestPayments.set(event.txn_id, event);
+  }
+}
+
+for (const event of latestPayments.values()) {
   if (event.status === "success") {
     total += Number(event.amount);
     count += 1;
