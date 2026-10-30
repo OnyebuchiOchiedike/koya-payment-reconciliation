@@ -34,11 +34,7 @@ for (const line of lines) {
 
 for (const event of latestPayments.values()) {
   if (event.status === "success") {
-    if (!Number.isFinite(Number(event.amount))) {
-  console.log("Invalid amount:", event);
-} else {
-  total += Number(event.amount);
-}
+total += Number(String(event.amount).replace(/,/g, ""));
     count += 1;
   }
 }
